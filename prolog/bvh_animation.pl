@@ -45,6 +45,7 @@ w --> [].
 
 skeletons([Skeleton | Rest]) -->
     skeleton(Skeleton),
+    !,
     skeletons(Rest).
 skeletons([]) --> [].
 
@@ -63,10 +64,11 @@ marker_line(Name) -->
     `\n`.
 
 motion_section_header(FT) -->
+    marker_line(`MOTION`),
     w,
     `Frames:`,
     w,
-    float(_),
+    integer(_),
     w,
     `\n`,
     w,
@@ -100,6 +102,7 @@ ident_([]) --> [].
 
 frames([Frame | Frames]) -->
     frame(Frame),
+    !,
     frames(Frames).
 frames([]) --> [].
 
