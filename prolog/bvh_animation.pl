@@ -38,6 +38,24 @@ bvh_file(Skeletons, FT, Frames) -->
     skeletons(Skeletons),
     motion_section_header(FT),
     frames(Frames).
+bvh_file(_, _, _) -->
+    ... ,
+    bvh_syntax_error('Cannot understand overall format of file').
+
+bvh_syntax_error(Msg) -->
+    lazy_list_location(Loc),
+    { print_message(warning, bvh_error(Msg, Loc)) }.
+
+:- multifile prolog:message/1.
+prolog:message(bvh_error(Msg, stream(_, Line, LinePos, _))) -->
+    [ 'In stream at line ~w pos ~w~n        ~w~n'-[Line, LinePos, Msg]].
+prolog:message(bvh_error(Msg, file(Name, Line, LinePos, _))) -->
+    [ 'In file ~w at line ~w pos ~w~n        ~w~n'-[Name, Line, LinePos, Msg]].
+
+
+
+... -->  [_], ... .
+... --> [].
 
 w --> whites,!.
 w --> [].
