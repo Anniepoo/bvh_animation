@@ -52,14 +52,13 @@ prolog:message(bvh_error(Msg, stream(_, Line, LinePos, _))) -->
 prolog:message(bvh_error(Msg, file(Name, Line, LinePos, _))) -->
     [ 'In file ~w at line ~w pos ~w~n        ~w~n'-[Name, Line, LinePos, Msg]].
 
-
-
+% anything
 ... -->  [_], ... .
 ... --> [].
 
+% zero or more non-nl whitespaces
 w --> whites,!.
 w --> [].
-
 
 skeletons([Skeleton | Rest]) -->
     skeleton(Skeleton),
@@ -74,6 +73,15 @@ skeleton(root(Name, Offset, Channels, Joints)) -->
     channels(Channels),
     joints_or_end_site(Joints),
     close_curly.
+skeleton(error) -->
+    id_line(`ROOT`, _),
+    string_without_string(`MOTION`, _),
+    bvh_syntax_error('You have invalid skeletons').
+
+string_without_string(Marker, Str) -->
+    string(Str),
+    Marker,
+    !.
 
 marker_line(Name) -->
     w,
@@ -95,6 +103,12 @@ motion_section_header(FT) -->
     float(FT),
     w,
     `\n`.
+motion_section_header(0.0) -->
+    string_without("\n", _),
+    `\n`,
+    string_without("\n", _),
+    `\n`,
+    bvh_syntax_error('Cannot understand MOTION header').
 
 close_curly --> w, `}`, w, `\n`.
 
@@ -129,6 +143,12 @@ frame([F | Rest]) -->
     float(F),
     frame(Rest).
 frame([]) --> w, `\n`.
+frame([]) -->
+    string_without("\n", _),
+    `\n`,
+    { gtrace },
+    bvh_syntax_error('Invalid Frame').
+
 
 offset_line([X, Y, Z]) -->
     w,
