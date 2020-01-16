@@ -24,8 +24,10 @@ bvh_read_animation(File, bvh{
                              frame_time: FT,
                              frames: Frames
                          }) :-
-    phrase_from_file(bvh_file(Skeletons, FT, Frames), File).
-
+    read_file_to_codes(File, Codes, []),
+    phrase(bvh_file(Skeletons, FT, Frames), Codes),
+%   phrase_from_file(bvh_file(Skeletons, FT, Frames), File),
+   !. % only the first interpretation is interesting
 
 		 /*******************************
 		 *            bvh format        *
@@ -43,7 +45,8 @@ bvh_file(_, _, _) -->
     bvh_syntax_error('Cannot understand overall format of file').
 
 bvh_syntax_error(Msg) -->
-    lazy_list_location(Loc),
+%    lazy_list_location(Loc),
+{ Loc = file(afile, 1, 1, 1) },
     { print_message(warning, bvh_error(Msg, Loc)) }.
 
 :- multifile prolog:message/1.
@@ -55,6 +58,7 @@ prolog:message(bvh_error(Msg, file(Name, Line, LinePos, _))) -->
 % anything
 ... -->  [_], ... .
 ... --> [].
+
 
 % zero or more non-nl whitespaces
 w --> whites,!.
@@ -136,19 +140,31 @@ frames([Frame | Frames]) -->
     frame(Frame),
     !,
     frames(Frames).
-frames([]) --> [].
+frames([]) --> eos.
+frames(Rest) -->
+    string_without(`\n`, _),
+     `\n`,
+     !,
+     bvh_syntax_error('invalid frame'),
+     frames(Rest).
+frames([]) -->
+    remainder(_),
+    !,
+    bvh_syntax_error('Cannot understand frames beyond here').
 
 frame([F | Rest]) -->
     w,
     float(F),
-    frame(Rest).
-frame([]) --> w, `\n`.
-frame([]) -->
-    string_without("\n", _),
-    `\n`,
-    { gtrace },
-    bvh_syntax_error('Invalid Frame').
+    !,
+    frame_(Rest).
 
+frame_([F | Rest]) -->
+    w,
+    float(F),
+    !,
+    frame_(Rest).
+frame_([]) -->
+    blanks_to_nl.
 
 offset_line([X, Y, Z]) -->
     w,
@@ -209,5 +225,21 @@ joint(joint{
     channels(Channels),
     joints_or_end_site(Joints),
     close_curly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
