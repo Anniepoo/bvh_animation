@@ -24,9 +24,9 @@ bvh_read_animation(File, bvh{
                              frame_time: FT,
                              frames: Frames
                          }) :-
-    read_file_to_codes(File, Codes, []),
-    phrase(bvh_file(Skeletons, FT, Frames), Codes),
-%   phrase_from_file(bvh_file(Skeletons, FT, Frames), File),
+%    read_file_to_codes(File, Codes, []),
+%    phrase(bvh_file(Skeletons, FT, Frames), Codes),
+   phrase_from_file(bvh_file(Skeletons, FT, Frames), File),
    !. % only the first interpretation is interesting
 
 		 /*******************************
@@ -45,8 +45,8 @@ bvh_file(_, _, _) -->
     bvh_syntax_error('Cannot understand overall format of file').
 
 bvh_syntax_error(Msg) -->
-%    lazy_list_location(Loc),
-{ Loc = file(afile, 1, 1, 1) },
+   lazy_list_location(Loc),
+%{ Loc = file(afile, 1, 1, 1) },
     { print_message(warning, bvh_error(Msg, Loc)) }.
 
 :- multifile prolog:message/1.
